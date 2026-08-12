@@ -1,0 +1,468 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Body Index — a quick measure</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,500;9..144,600&family=IBM+Plex+Mono:wght@400;500;600&family=Inter:wght@400;500;600&display=swap');
+
+  :root{
+    --paper: #ECEBE1;
+    --paper-line: #d9d7c8;
+    --ink: #1C2B26;
+    --ink-soft: #4B5952;
+    --teal: #3E6259;
+    --mark: #C1443C;
+    --under: #5B7FA6;
+    --normal: #3E6259;
+    --over: #B98B2E;
+    --obese: #B9483E;
+    --card: #F5F4EC;
+  }
+
+  *{ box-sizing:border-box; }
+
+  body{
+    margin:0;
+    background:
+      repeating-linear-gradient(180deg, transparent 0 39px, var(--paper-line) 39px 40px),
+      var(--paper);
+    color:var(--ink);
+    font-family:'Inter', sans-serif;
+    min-height:100vh;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    padding:32px 20px;
+  }
+
+  .sheet{
+    width:100%;
+    max-width:880px;
+    background:var(--card);
+    border:1px solid #cfcdbd;
+    box-shadow: 0 1px 0 #fff inset, 0 20px 40px -25px rgba(28,43,38,0.4);
+    padding:44px 44px 36px;
+  }
+
+  .eyebrow{
+    font-family:'IBM Plex Mono', monospace;
+    font-size:11px;
+    letter-spacing:0.18em;
+    text-transform:uppercase;
+    color:var(--teal);
+    display:flex;
+    align-items:center;
+    gap:10px;
+  }
+  .eyebrow::before{
+    content:"";
+    width:20px; height:1px;
+    background:var(--teal);
+  }
+
+  h1{
+    font-family:'Fraunces', serif;
+    font-weight:500;
+    font-size:clamp(32px, 5vw, 46px);
+    margin:10px 0 4px;
+    letter-spacing:-0.01em;
+  }
+
+  .sub{
+    color:var(--ink-soft);
+    font-size:14.5px;
+    margin:0 0 34px;
+    max-width:46ch;
+    line-height:1.5;
+  }
+
+  .grid{
+    display:grid;
+    grid-template-columns:120px 1fr;
+    gap:40px;
+    align-items:start;
+  }
+
+  /* ---- Ruler ---- */
+  .ruler-wrap{
+    position:relative;
+    height:360px;
+    display:flex;
+    justify-content:center;
+  }
+  .ruler{
+    position:relative;
+    width:34px;
+    height:100%;
+    background:linear-gradient(180deg, #fff, #f2f1e8);
+    border:1px solid #c9c7b8;
+  }
+  .tick{
+    position:absolute;
+    left:0;
+    height:1px;
+    background:#b7b5a4;
+  }
+  .tick.major{ width:16px; background:var(--ink-soft); height:1.5px; }
+  .tick.minor{ width:9px; }
+  .tick-label{
+    position:absolute;
+    left:20px;
+    transform:translateY(-50%);
+    font-family:'IBM Plex Mono', monospace;
+    font-size:9.5px;
+    color:var(--ink-soft);
+  }
+  .fill{
+    position:absolute;
+    left:0; right:0; bottom:0;
+    background:linear-gradient(180deg, rgba(62,98,89,0.16), rgba(62,98,89,0.34));
+    border-top:2px solid var(--mark);
+    transition:height 0.25s ease;
+  }
+  .marker{
+    position:absolute;
+    left:34px;
+    transform:translateY(-50%);
+    display:flex;
+    align-items:center;
+    gap:6px;
+    transition:bottom 0.25s ease;
+  }
+  .marker::before{
+    content:"";
+    width:12px; height:2px;
+    background:var(--mark);
+  }
+  .marker span{
+    font-family:'IBM Plex Mono', monospace;
+    font-size:11px;
+    color:var(--mark);
+    font-weight:600;
+    white-space:nowrap;
+  }
+
+  /* ---- Fields ---- */
+  .fields{ display:flex; flex-direction:column; gap:22px; margin-bottom:8px; }
+  .field label{
+    display:block;
+    font-family:'IBM Plex Mono', monospace;
+    font-size:11px;
+    letter-spacing:0.1em;
+    text-transform:uppercase;
+    color:var(--ink-soft);
+    margin-bottom:8px;
+  }
+  .field-row{
+    display:flex;
+    align-items:baseline;
+    border-bottom:1.5px solid var(--ink);
+    padding-bottom:6px;
+    gap:10px;
+  }
+  .field-row input{
+    font-family:'Fraunces', serif;
+    font-size:32px;
+    font-weight:500;
+    color:var(--ink);
+    background:none;
+    border:none;
+    outline:none;
+    width:100%;
+    -moz-appearance:textfield;
+  }
+  .field-row input::-webkit-outer-spin-button,
+  .field-row input::-webkit-inner-spin-button{ -webkit-appearance:none; margin:0; }
+  .field-row input:focus{ color:var(--teal); }
+  .unit-toggle{
+    display:flex;
+    gap:6px;
+    font-family:'IBM Plex Mono', monospace;
+    font-size:12px;
+  }
+  .unit-toggle button{
+    background:none;
+    border:1px solid #cfcdbd;
+    color:var(--ink-soft);
+    padding:4px 9px;
+    cursor:pointer;
+    border-radius:2px;
+  }
+  .unit-toggle button.active{
+    background:var(--ink);
+    border-color:var(--ink);
+    color:var(--card);
+  }
+  .unit-toggle button:focus-visible{ outline:2px solid var(--teal); outline-offset:2px; }
+
+  /* ---- Readout ---- */
+  .readout{
+    margin-top:28px;
+    padding-top:26px;
+    border-top:1px solid var(--paper-line);
+    display:flex;
+    align-items:flex-end;
+    justify-content:space-between;
+    flex-wrap:wrap;
+    gap:20px;
+  }
+  .bmi-value{
+    font-family:'IBM Plex Mono', monospace;
+    font-size:56px;
+    font-weight:600;
+    line-height:1;
+    color:var(--ink);
+  }
+  .bmi-value .decimal{ font-size:28px; color:var(--ink-soft); }
+  .bmi-label{
+    font-family:'IBM Plex Mono', monospace;
+    font-size:11px;
+    letter-spacing:0.14em;
+    text-transform:uppercase;
+    color:var(--ink-soft);
+    margin-bottom:6px;
+  }
+  .category{
+    text-align:right;
+  }
+  .category-tag{
+    display:inline-block;
+    font-family:'IBM Plex Mono', monospace;
+    font-size:13px;
+    font-weight:600;
+    letter-spacing:0.04em;
+    padding:6px 12px;
+    border-radius:2px;
+    color:#fff;
+  }
+  .category-range{
+    display:block;
+    margin-top:8px;
+    font-size:12px;
+    color:var(--ink-soft);
+    font-family:'IBM Plex Mono', monospace;
+  }
+
+  .legend{
+    margin-top:30px;
+    display:flex;
+    gap:0;
+    height:6px;
+    border-radius:3px;
+    overflow:hidden;
+  }
+  .legend div{ flex:1; }
+  .legend-labels{
+    display:flex;
+    justify-content:space-between;
+    margin-top:6px;
+    font-family:'IBM Plex Mono', monospace;
+    font-size:9.5px;
+    color:var(--ink-soft);
+    letter-spacing:0.03em;
+  }
+
+  .foot{
+    margin-top:30px;
+    font-size:12px;
+    color:var(--ink-soft);
+    line-height:1.6;
+    border-top:1px solid var(--paper-line);
+    padding-top:16px;
+  }
+
+  @media (max-width:600px){
+    .sheet{ padding:30px 22px 26px; }
+    .grid{ grid-template-columns:70px 1fr; gap:22px; }
+    .ruler{ width:24px; }
+    .marker{ left:24px; }
+    .bmi-value{ font-size:44px; }
+  }
+
+  @media (prefers-reduced-motion: reduce){
+    .fill, .marker{ transition:none; }
+  }
+</style>
+</head>
+<body>
+
+<div class="sheet">
+  <div class="eyebrow">A quick measure</div>
+  <h1>Body Index</h1>
+  <p class="sub">Enter your height and weight. The chart on the left tracks where you land, the way a clinic growth chart would.</p>
+
+  <div class="grid">
+    <div class="ruler-wrap">
+      <div class="ruler" id="ruler">
+        <div class="fill" id="fill"></div>
+      </div>
+      <div class="marker" id="marker"><span id="markerLabel">170 cm</span></div>
+    </div>
+
+    <div>
+      <div class="fields">
+        <div class="field">
+          <label for="height">Height</label>
+          <div class="field-row">
+            <input type="number" id="height" value="170" min="1" inputmode="decimal">
+            <div class="unit-toggle" id="heightUnit">
+              <button data-unit="cm" class="active">cm</button>
+              <button data-unit="in">in</button>
+            </div>
+          </div>
+        </div>
+        <div class="field">
+          <label for="weight">Weight</label>
+          <div class="field-row">
+            <input type="number" id="weight" value="68" min="1" inputmode="decimal">
+            <div class="unit-toggle" id="weightUnit">
+              <button data-unit="kg" class="active">kg</button>
+              <button data-unit="lb">lb</button>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="readout">
+        <div>
+          <div class="bmi-label">BMI reading</div>
+          <div class="bmi-value" id="bmiValue">—</div>
+        </div>
+        <div class="category">
+          <span class="category-tag" id="categoryTag">—</span>
+          <span class="category-range" id="categoryRange"></span>
+        </div>
+      </div>
+
+      <div class="legend">
+        <div style="background:var(--under)"></div>
+        <div style="background:var(--normal)"></div>
+        <div style="background:var(--over)"></div>
+        <div style="background:var(--obese)"></div>
+      </div>
+      <div class="legend-labels">
+        <span>Under 18.5</span>
+        <span>18.5–24.9</span>
+        <span>25–29.9</span>
+        <span>30+</span>
+      </div>
+
+      <p class="foot">BMI is a rough screening measure, not a diagnosis — it doesn't account for muscle mass, frame, age, or sex. If you have concerns about your weight or health, it's worth checking with a doctor rather than relying on this number alone.</p>
+    </div>
+  </div>
+</div>
+
+<script>
+  const heightInput = document.getElementById('height');
+  const weightInput = document.getElementById('weight');
+  const heightUnitBtns = document.querySelectorAll('#heightUnit button');
+  const weightUnitBtns = document.querySelectorAll('#weightUnit button');
+  const ruler = document.getElementById('ruler');
+  const fill = document.getElementById('fill');
+  const marker = document.getElementById('marker');
+  const markerLabel = document.getElementById('markerLabel');
+  const bmiValue = document.getElementById('bmiValue');
+  const categoryTag = document.getElementById('categoryTag');
+  const categoryRange = document.getElementById('categoryRange');
+
+  let heightUnit = 'cm';
+  let weightUnit = 'kg';
+
+  const RULER_MIN = 120; // cm
+  const RULER_MAX = 220; // cm
+
+  function setUnit(group, btns, unit){
+    btns.forEach(b => b.classList.toggle('active', b.dataset.unit === unit));
+  }
+
+  function toCm(v, unit){ return unit === 'in' ? v * 2.54 : v; }
+  function toKg(v, unit){ return unit === 'lb' ? v * 0.453592 : v; }
+
+  function buildTicks(){
+    ruler.querySelectorAll('.tick, .tick-label').forEach(el => el.remove());
+    for(let cm = RULER_MIN; cm <= RULER_MAX; cm += 5){
+      const pct = 1 - (cm - RULER_MIN) / (RULER_MAX - RULER_MIN);
+      const major = cm % 20 === 0;
+      const tick = document.createElement('div');
+      tick.className = 'tick ' + (major ? 'major' : 'minor');
+      tick.style.top = (pct * 100) + '%';
+      ruler.appendChild(tick);
+      if(major){
+        const label = document.createElement('div');
+        label.className = 'tick-label';
+        label.style.top = (pct * 100) + '%';
+        label.textContent = cm;
+        ruler.appendChild(label);
+      }
+    }
+  }
+
+  function categoryFor(bmi){
+    if(bmi < 18.5) return {name:'Underweight', color:'var(--under)', range:'Below 18.5'};
+    if(bmi < 25) return {name:'Normal', color:'var(--normal)', range:'18.5 – 24.9'};
+    if(bmi < 30) return {name:'Overweight', color:'var(--over)', range:'25.0 – 29.9'};
+    return {name:'Obese', color:'var(--obese)', range:'30.0 and above'};
+  }
+
+  function update(){
+    const hRaw = parseFloat(heightInput.value);
+    const wRaw = parseFloat(weightInput.value);
+
+    const hCm = toCm(hRaw || 0, heightUnit);
+    const wKg = toKg(wRaw || 0, weightUnit);
+
+    // ruler position
+    const clamped = Math.min(RULER_MAX, Math.max(RULER_MIN, hCm || RULER_MIN));
+    const pct = (clamped - RULER_MIN) / (RULER_MAX - RULER_MIN);
+    fill.style.height = (pct * 100) + '%';
+    marker.style.bottom = (pct * 100) + '%';
+    markerLabel.textContent = (hCm ? Math.round(hCm) : '—') + ' cm';
+
+    if(hCm > 0 && wKg > 0){
+      const bmi = wKg / Math.pow(hCm / 100, 2);
+      const whole = Math.floor(bmi);
+      const decimal = (bmi - whole).toFixed(1).slice(1);
+      bmiValue.innerHTML = whole + '<span class="decimal">' + decimal + '</span>';
+      const cat = categoryFor(bmi);
+      categoryTag.textContent = cat.name;
+      categoryTag.style.background = cat.color;
+      categoryRange.textContent = cat.range;
+    } else {
+      bmiValue.textContent = '—';
+      categoryTag.textContent = '—';
+      categoryTag.style.background = '#9b998a';
+      categoryRange.textContent = '';
+    }
+  }
+
+  heightUnitBtns.forEach(btn => btn.addEventListener('click', () => {
+    if(btn.dataset.unit === heightUnit) return;
+    const hRaw = parseFloat(heightInput.value) || 0;
+    const hCm = toCm(hRaw, heightUnit);
+    heightUnit = btn.dataset.unit;
+    heightInput.value = heightUnit === 'in' ? +(hCm / 2.54).toFixed(1) : Math.round(hCm);
+    setUnit('height', heightUnitBtns, heightUnit);
+    update();
+  }));
+
+  weightUnitBtns.forEach(btn => btn.addEventListener('click', () => {
+    if(btn.dataset.unit === weightUnit) return;
+    const wRaw = parseFloat(weightInput.value) || 0;
+    const wKg = toKg(wRaw, weightUnit);
+    weightUnit = btn.dataset.unit;
+    weightInput.value = weightUnit === 'lb' ? +(wKg / 0.453592).toFixed(1) : Math.round(wKg);
+    setUnit('weight', weightUnitBtns, weightUnit);
+    update();
+  }));
+
+  heightInput.addEventListener('input', update);
+  weightInput.addEventListener('input', update);
+
+  buildTicks();
+  update();
+</script>
+
+</body>
+</html>
