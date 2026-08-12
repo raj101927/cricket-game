@@ -3,465 +3,505 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Body Index — a quick measure</title>
+<title>Sweet Spot — a cricket batting game</title>
 <style>
-  @import url('https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,500;9..144,600&family=IBM+Plex+Mono:wght@400;500;600&family=Inter:wght@400;500;600&display=swap');
+  @import url('https://fonts.googleapis.com/css2?family=Teko:wght@500;600;700&family=IBM+Plex+Mono:wght@400;500;600;700&family=Inter:wght@400;500;600&display=swap');
 
   :root{
-    --paper: #ECEBE1;
-    --paper-line: #d9d7c8;
-    --ink: #1C2B26;
-    --ink-soft: #4B5952;
-    --teal: #3E6259;
-    --mark: #C1443C;
-    --under: #5B7FA6;
-    --normal: #3E6259;
-    --over: #B98B2E;
-    --obese: #B9483E;
-    --card: #F5F4EC;
+    --turf: #234a34;
+    --turf-dark: #1b3a29;
+    --pitch: #cbb27f;
+    --pitch-edge: #b39a68;
+    --sky: #cfe3ea;
+    --ball: #a6291b;
+    --led-bg: #0b0f0c;
+    --led-amber: #ffc736;
+    --led-dim: #4a3d1a;
+    --paper: #ede9dd;
+    --ink: #16241c;
+    --ink-soft: #4c5a51;
   }
 
   *{ box-sizing:border-box; }
 
   body{
     margin:0;
+    min-height:100vh;
     background:
-      repeating-linear-gradient(180deg, transparent 0 39px, var(--paper-line) 39px 40px),
-      var(--paper);
+      radial-gradient(circle at 50% -10%, #2f5940, var(--turf-dark) 65%);
     color:var(--ink);
     font-family:'Inter', sans-serif;
-    min-height:100vh;
     display:flex;
     align-items:center;
     justify-content:center;
-    padding:32px 20px;
+    padding:28px 16px;
   }
 
-  .sheet{
+  .arena{
     width:100%;
-    max-width:880px;
-    background:var(--card);
-    border:1px solid #cfcdbd;
-    box-shadow: 0 1px 0 #fff inset, 0 20px 40px -25px rgba(28,43,38,0.4);
-    padding:44px 44px 36px;
+    max-width:980px;
+    background:var(--paper);
+    border:1px solid #d9d3bf;
+    box-shadow:0 24px 50px -30px rgba(0,0,0,0.6);
+    padding:30px;
+    display:grid;
+    grid-template-columns:340px 1fr;
+    gap:32px;
   }
 
-  .eyebrow{
+  header.title{
+    grid-column:1 / -1;
+    display:flex;
+    align-items:baseline;
+    justify-content:space-between;
+    flex-wrap:wrap;
+    gap:8px;
+    margin-bottom:4px;
+  }
+  .title .eyebrow{
     font-family:'IBM Plex Mono', monospace;
     font-size:11px;
     letter-spacing:0.18em;
     text-transform:uppercase;
-    color:var(--teal);
-    display:flex;
-    align-items:center;
-    gap:10px;
+    color:var(--turf);
   }
-  .eyebrow::before{
-    content:"";
-    width:20px; height:1px;
-    background:var(--teal);
-  }
-
   h1{
-    font-family:'Fraunces', serif;
-    font-weight:500;
-    font-size:clamp(32px, 5vw, 46px);
-    margin:10px 0 4px;
-    letter-spacing:-0.01em;
-  }
-
-  .sub{
-    color:var(--ink-soft);
-    font-size:14.5px;
-    margin:0 0 34px;
-    max-width:46ch;
-    line-height:1.5;
-  }
-
-  .grid{
-    display:grid;
-    grid-template-columns:120px 1fr;
-    gap:40px;
-    align-items:start;
-  }
-
-  /* ---- Ruler ---- */
-  .ruler-wrap{
-    position:relative;
-    height:360px;
-    display:flex;
-    justify-content:center;
-  }
-  .ruler{
-    position:relative;
-    width:34px;
-    height:100%;
-    background:linear-gradient(180deg, #fff, #f2f1e8);
-    border:1px solid #c9c7b8;
-  }
-  .tick{
-    position:absolute;
-    left:0;
-    height:1px;
-    background:#b7b5a4;
-  }
-  .tick.major{ width:16px; background:var(--ink-soft); height:1.5px; }
-  .tick.minor{ width:9px; }
-  .tick-label{
-    position:absolute;
-    left:20px;
-    transform:translateY(-50%);
-    font-family:'IBM Plex Mono', monospace;
-    font-size:9.5px;
-    color:var(--ink-soft);
-  }
-  .fill{
-    position:absolute;
-    left:0; right:0; bottom:0;
-    background:linear-gradient(180deg, rgba(62,98,89,0.16), rgba(62,98,89,0.34));
-    border-top:2px solid var(--mark);
-    transition:height 0.25s ease;
-  }
-  .marker{
-    position:absolute;
-    left:34px;
-    transform:translateY(-50%);
-    display:flex;
-    align-items:center;
-    gap:6px;
-    transition:bottom 0.25s ease;
-  }
-  .marker::before{
-    content:"";
-    width:12px; height:2px;
-    background:var(--mark);
-  }
-  .marker span{
-    font-family:'IBM Plex Mono', monospace;
-    font-size:11px;
-    color:var(--mark);
-    font-weight:600;
-    white-space:nowrap;
-  }
-
-  /* ---- Fields ---- */
-  .fields{ display:flex; flex-direction:column; gap:22px; margin-bottom:8px; }
-  .field label{
-    display:block;
-    font-family:'IBM Plex Mono', monospace;
-    font-size:11px;
-    letter-spacing:0.1em;
-    text-transform:uppercase;
-    color:var(--ink-soft);
-    margin-bottom:8px;
-  }
-  .field-row{
-    display:flex;
-    align-items:baseline;
-    border-bottom:1.5px solid var(--ink);
-    padding-bottom:6px;
-    gap:10px;
-  }
-  .field-row input{
-    font-family:'Fraunces', serif;
-    font-size:32px;
-    font-weight:500;
+    font-family:'Teko', sans-serif;
+    font-weight:700;
+    font-size:52px;
+    letter-spacing:0.01em;
+    margin:0;
+    line-height:0.9;
     color:var(--ink);
-    background:none;
-    border:none;
-    outline:none;
-    width:100%;
-    -moz-appearance:textfield;
   }
-  .field-row input::-webkit-outer-spin-button,
-  .field-row input::-webkit-inner-spin-button{ -webkit-appearance:none; margin:0; }
-  .field-row input:focus{ color:var(--teal); }
-  .unit-toggle{
-    display:flex;
-    gap:6px;
-    font-family:'IBM Plex Mono', monospace;
-    font-size:12px;
-  }
-  .unit-toggle button{
-    background:none;
-    border:1px solid #cfcdbd;
+  .title p{
+    font-size:13px;
     color:var(--ink-soft);
-    padding:4px 9px;
-    cursor:pointer;
-    border-radius:2px;
+    margin:2px 0 0;
   }
-  .unit-toggle button.active{
-    background:var(--ink);
-    border-color:var(--ink);
-    color:var(--card);
-  }
-  .unit-toggle button:focus-visible{ outline:2px solid var(--teal); outline-offset:2px; }
 
-  /* ---- Readout ---- */
-  .readout{
-    margin-top:28px;
-    padding-top:26px;
-    border-top:1px solid var(--paper-line);
+  /* --- Pitch / canvas column --- */
+  .pitch-col{
     display:flex;
-    align-items:flex-end;
+    flex-direction:column;
+    align-items:center;
+    gap:14px;
+  }
+  #game{
+    width:100%;
+    max-width:320px;
+    aspect-ratio: 320 / 460;
+    background:var(--turf);
+    border-radius:6px;
+    box-shadow:inset 0 0 0 1px #0f2417, 0 10px 24px -14px rgba(0,0,0,0.5);
+    touch-action:none;
+    cursor:pointer;
+  }
+  #game:focus-visible{ outline:3px solid var(--led-amber); outline-offset:2px; }
+
+  .swing-btn{
+    width:100%;
+    max-width:320px;
+    font-family:'Teko', sans-serif;
+    font-weight:600;
+    font-size:26px;
+    letter-spacing:0.06em;
+    background:var(--ball);
+    color:#fff;
+    border:none;
+    padding:12px 0 10px;
+    border-radius:4px;
+    cursor:pointer;
+    transition:transform 0.08s ease, background 0.15s ease;
+  }
+  .swing-btn:active{ transform:scale(0.97); }
+  .swing-btn:disabled{ background:#9a9385; cursor:default; }
+  .swing-btn:focus-visible{ outline:3px solid var(--turf); outline-offset:2px; }
+
+  .hint{
+    font-family:'IBM Plex Mono', monospace;
+    font-size:11px;
+    color:var(--ink-soft);
+    text-align:center;
+  }
+
+  /* --- Scoreboard column --- */
+  .board-col{ display:flex; flex-direction:column; gap:18px; }
+
+  .scoreboard{
+    background:var(--led-bg);
+    border-radius:6px;
+    padding:22px 24px;
+    box-shadow:inset 0 0 0 1px #000;
+  }
+  .sb-row{
+    display:flex;
     justify-content:space-between;
-    flex-wrap:wrap;
+    align-items:flex-end;
     gap:20px;
   }
-  .bmi-value{
+  .sb-block{ text-align:left; }
+  .sb-label{
     font-family:'IBM Plex Mono', monospace;
-    font-size:56px;
-    font-weight:600;
-    line-height:1;
-    color:var(--ink);
-  }
-  .bmi-value .decimal{ font-size:28px; color:var(--ink-soft); }
-  .bmi-label{
-    font-family:'IBM Plex Mono', monospace;
-    font-size:11px;
-    letter-spacing:0.14em;
+    font-size:10px;
+    letter-spacing:0.16em;
     text-transform:uppercase;
-    color:var(--ink-soft);
-    margin-bottom:6px;
+    color:#7a6a35;
+    margin-bottom:4px;
   }
-  .category{
-    text-align:right;
+  .sb-value{
+    font-family:'IBM Plex Mono', monospace;
+    font-weight:700;
+    font-size:44px;
+    color:var(--led-dim);
+    line-height:1;
+    transition:color 0.05s;
   }
-  .category-tag{
-    display:inline-block;
+  .sb-value.lit{ color:var(--led-amber); text-shadow:0 0 10px rgba(255,199,54,0.55); }
+  .sb-value.small{ font-size:26px; }
+
+  .sb-divider{
+    grid-column:1/-1;
+    height:1px;
+    background:#1d1b12;
+    margin:16px 0;
+  }
+
+  .commentary{
+    margin-top:18px;
+    padding-top:16px;
+    border-top:1px solid #1d1b12;
     font-family:'IBM Plex Mono', monospace;
     font-size:13px;
-    font-weight:600;
-    letter-spacing:0.04em;
-    padding:6px 12px;
-    border-radius:2px;
-    color:#fff;
+    color:var(--led-dim);
+    min-height:18px;
   }
-  .category-range{
-    display:block;
-    margin-top:8px;
-    font-size:12px;
-    color:var(--ink-soft);
+  .commentary.lit{ color:var(--led-amber); }
+
+  .zone-key{
+    display:flex;
+    align-items:center;
+    gap:8px;
     font-family:'IBM Plex Mono', monospace;
+    font-size:11px;
+    color:var(--ink-soft);
+  }
+  .zone-key .swatch{
+    width:12px; height:12px; border-radius:2px;
   }
 
-  .legend{
-    margin-top:30px;
-    display:flex;
-    gap:0;
-    height:6px;
-    border-radius:3px;
-    overflow:hidden;
-  }
-  .legend div{ flex:1; }
-  .legend-labels{
-    display:flex;
-    justify-content:space-between;
-    margin-top:6px;
-    font-family:'IBM Plex Mono', monospace;
-    font-size:9.5px;
-    color:var(--ink-soft);
-    letter-spacing:0.03em;
-  }
-
-  .foot{
-    margin-top:30px;
-    font-size:12px;
+  .rules{
+    font-size:12.5px;
     color:var(--ink-soft);
     line-height:1.6;
-    border-top:1px solid var(--paper-line);
-    padding-top:16px;
+    border-top:1px solid #d9d3bf;
+    padding-top:14px;
   }
+  .rules strong{ color:var(--ink); }
 
-  @media (max-width:600px){
-    .sheet{ padding:30px 22px 26px; }
-    .grid{ grid-template-columns:70px 1fr; gap:22px; }
-    .ruler{ width:24px; }
-    .marker{ left:24px; }
-    .bmi-value{ font-size:44px; }
+  .end-screen{
+    display:none;
+    flex-direction:column;
+    align-items:center;
+    gap:10px;
+    text-align:center;
+    padding:18px 0 4px;
+  }
+  .end-screen.show{ display:flex; }
+  .end-screen h2{
+    font-family:'Teko', sans-serif;
+    font-size:34px;
+    margin:0;
+    color:var(--ink);
+  }
+  .end-screen p{ margin:0; font-size:13px; color:var(--ink-soft); }
+  .again-btn{
+    margin-top:6px;
+    font-family:'IBM Plex Mono', monospace;
+    font-size:12px;
+    letter-spacing:0.08em;
+    text-transform:uppercase;
+    background:none;
+    border:1px solid var(--ink);
+    color:var(--ink);
+    padding:8px 16px;
+    border-radius:3px;
+    cursor:pointer;
+  }
+  .again-btn:hover{ background:var(--ink); color:var(--paper); }
+
+  @media (max-width:760px){
+    .arena{ grid-template-columns:1fr; padding:22px; }
+    h1{ font-size:42px; }
   }
 
   @media (prefers-reduced-motion: reduce){
-    .fill, .marker{ transition:none; }
+    .swing-btn, .again-btn{ transition:none; }
   }
 </style>
 </head>
 <body>
 
-<div class="sheet">
-  <div class="eyebrow">A quick measure</div>
-  <h1>Body Index</h1>
-  <p class="sub">Enter your height and weight. The chart on the left tracks where you land, the way a clinic growth chart would.</p>
+<div class="arena">
+  <header class="title">
+    <div>
+      <div class="eyebrow">Timing is everything</div>
+      <h1>Sweet Spot</h1>
+      <p>A short over of batting. Swing when the ball hits the bright band.</p>
+    </div>
+  </header>
 
-  <div class="grid">
-    <div class="ruler-wrap">
-      <div class="ruler" id="ruler">
-        <div class="fill" id="fill"></div>
+  <div class="pitch-col">
+    <canvas id="game" width="320" height="460" tabindex="0" aria-label="Cricket pitch. Press space or tap to swing."></canvas>
+    <button class="swing-btn" id="swingBtn">SWING (SPACE)</button>
+    <div class="hint">Tap the pitch, click Swing, or press Space — time it to the amber band.</div>
+  </div>
+
+  <div class="board-col">
+    <div class="scoreboard">
+      <div class="sb-row">
+        <div class="sb-block">
+          <div class="sb-label">Runs</div>
+          <div class="sb-value lit" id="sbRuns">0</div>
+        </div>
+        <div class="sb-block">
+          <div class="sb-label">Wickets</div>
+          <div class="sb-value lit" id="sbWickets">0</div>
+        </div>
+        <div class="sb-block">
+          <div class="sb-label">Overs</div>
+          <div class="sb-value small lit" id="sbOvers">0.0</div>
+        </div>
       </div>
-      <div class="marker" id="marker"><span id="markerLabel">170 cm</span></div>
+      <div class="commentary" id="commentary">Press SWING or Space to face the first ball.</div>
+      <div class="end-screen" id="endScreen">
+        <h2 id="endTitle">Innings over</h2>
+        <p id="endSub"></p>
+        <button class="again-btn" id="againBtn">Play again</button>
+      </div>
     </div>
 
-    <div>
-      <div class="fields">
-        <div class="field">
-          <label for="height">Height</label>
-          <div class="field-row">
-            <input type="number" id="height" value="170" min="1" inputmode="decimal">
-            <div class="unit-toggle" id="heightUnit">
-              <button data-unit="cm" class="active">cm</button>
-              <button data-unit="in">in</button>
-            </div>
-          </div>
-        </div>
-        <div class="field">
-          <label for="weight">Weight</label>
-          <div class="field-row">
-            <input type="number" id="weight" value="68" min="1" inputmode="decimal">
-            <div class="unit-toggle" id="weightUnit">
-              <button data-unit="kg" class="active">kg</button>
-              <button data-unit="lb">lb</button>
-            </div>
-          </div>
-        </div>
-      </div>
+    <div class="zone-key">
+      <span class="swatch" style="background:#ffe38a"></span>
+      Sweet spot — swing here for a six or four
+    </div>
 
-      <div class="readout">
-        <div>
-          <div class="bmi-label">BMI reading</div>
-          <div class="bmi-value" id="bmiValue">—</div>
-        </div>
-        <div class="category">
-          <span class="category-tag" id="categoryTag">—</span>
-          <span class="category-range" id="categoryRange"></span>
-        </div>
-      </div>
-
-      <div class="legend">
-        <div style="background:var(--under)"></div>
-        <div style="background:var(--normal)"></div>
-        <div style="background:var(--over)"></div>
-        <div style="background:var(--obese)"></div>
-      </div>
-      <div class="legend-labels">
-        <span>Under 18.5</span>
-        <span>18.5–24.9</span>
-        <span>25–29.9</span>
-        <span>30+</span>
-      </div>
-
-      <p class="foot">BMI is a rough screening measure, not a diagnosis — it doesn't account for muscle mass, frame, age, or sex. If you have concerns about your weight or health, it's worth checking with a doctor rather than relying on this number alone.</p>
+    <div class="rules">
+      <strong>How it works —</strong> six balls to an over, two overs, three wickets in hand. Each ball comes down the
+      pitch at its own pace. Swing right on the bright band for a six, just off it for a four, further out for a
+      single or two. Miss the timing badly and you're out; leave it alone for a dot ball.
     </div>
   </div>
 </div>
 
 <script>
-  const heightInput = document.getElementById('height');
-  const weightInput = document.getElementById('weight');
-  const heightUnitBtns = document.querySelectorAll('#heightUnit button');
-  const weightUnitBtns = document.querySelectorAll('#weightUnit button');
-  const ruler = document.getElementById('ruler');
-  const fill = document.getElementById('fill');
-  const marker = document.getElementById('marker');
-  const markerLabel = document.getElementById('markerLabel');
-  const bmiValue = document.getElementById('bmiValue');
-  const categoryTag = document.getElementById('categoryTag');
-  const categoryRange = document.getElementById('categoryRange');
+(function(){
+  const canvas = document.getElementById('game');
+  const ctx = canvas.getContext('2d');
+  const W = canvas.width, H = canvas.height;
 
-  let heightUnit = 'cm';
-  let weightUnit = 'kg';
+  const swingBtn = document.getElementById('swingBtn');
+  const sbRuns = document.getElementById('sbRuns');
+  const sbWickets = document.getElementById('sbWickets');
+  const sbOvers = document.getElementById('sbOvers');
+  const commentary = document.getElementById('commentary');
+  const endScreen = document.getElementById('endScreen');
+  const endTitle = document.getElementById('endTitle');
+  const endSub = document.getElementById('endSub');
+  const againBtn = document.getElementById('againBtn');
 
-  const RULER_MIN = 120; // cm
-  const RULER_MAX = 220; // cm
+  const MAX_BALLS = 12; // 2 overs
+  const MAX_WICKETS = 3;
+  const START_Y = 46;
+  const STUMP_Y = 430;
+  const ZONE_Y = 340;      // sweet spot center
+  const PITCH_X = W/2, PITCH_HALF = 44;
 
-  function setUnit(group, btns, unit){
-    btns.forEach(b => b.classList.toggle('active', b.dataset.unit === unit));
+  let state, ball, animId, ballTimer;
+
+  function freshState(){
+    return { runs:0, wickets:0, balls:0, ballActive:false, swungThisBall:false, gameOver:false };
   }
 
-  function toCm(v, unit){ return unit === 'in' ? v * 2.54 : v; }
-  function toKg(v, unit){ return unit === 'lb' ? v * 0.453592 : v; }
+  function newBall(){
+    const overIndex = Math.floor(state.balls / 6);
+    const speedRange = overIndex === 0 ? [1200, 1600] : [1000, 1400]; // ms to travel, faster 2nd over
+    const duration = speedRange[0] + Math.random() * (speedRange[1]-speedRange[0]);
+    return { y:START_Y, duration, start:performance.now(), active:true };
+  }
 
-  function buildTicks(){
-    ruler.querySelectorAll('.tick, .tick-label').forEach(el => el.remove());
-    for(let cm = RULER_MIN; cm <= RULER_MAX; cm += 5){
-      const pct = 1 - (cm - RULER_MIN) / (RULER_MAX - RULER_MIN);
-      const major = cm % 20 === 0;
-      const tick = document.createElement('div');
-      tick.className = 'tick ' + (major ? 'major' : 'minor');
-      tick.style.top = (pct * 100) + '%';
-      ruler.appendChild(tick);
-      if(major){
-        const label = document.createElement('div');
-        label.className = 'tick-label';
-        label.style.top = (pct * 100) + '%';
-        label.textContent = cm;
-        ruler.appendChild(label);
+  function reset(){
+    state = freshState();
+    endScreen.classList.remove('show');
+    updateBoard();
+    commentary.classList.remove('lit');
+    commentary.textContent = 'Press SWING or Space to face the first ball.';
+    swingBtn.disabled = false;
+    drawStatic();
+  }
+
+  function updateBoard(){
+    sbRuns.textContent = state.runs;
+    sbWickets.textContent = state.wickets;
+    const over = Math.floor(state.balls/6);
+    const ballInOver = state.balls % 6;
+    sbOvers.textContent = over + '.' + ballInOver;
+  }
+
+  function say(text){
+    commentary.textContent = text;
+    commentary.classList.add('lit');
+  }
+
+  function drawPitch(ballY, ballR){
+    ctx.clearRect(0,0,W,H);
+
+    // field
+    const grd = ctx.createLinearGradient(0,0,0,H);
+    grd.addColorStop(0, '#2c5b40');
+    grd.addColorStop(1, '#1e422e');
+    ctx.fillStyle = grd;
+    ctx.fillRect(0,0,W,H);
+
+    // pitch strip
+    ctx.fillStyle = '#cbb27f';
+    ctx.fillRect(PITCH_X-PITCH_HALF, 20, PITCH_HALF*2, 420);
+    ctx.strokeStyle = '#b39a68';
+    ctx.lineWidth = 2;
+    ctx.strokeRect(PITCH_X-PITCH_HALF, 20, PITCH_HALF*2, 420);
+
+    // sweet spot band
+    const bandTop = ZONE_Y - 22, bandH = 44;
+    ctx.fillStyle = 'rgba(255,227,138,0.38)';
+    ctx.fillRect(PITCH_X-PITCH_HALF, bandTop, PITCH_HALF*2, bandH);
+    ctx.strokeStyle = 'rgba(255,199,54,0.9)';
+    ctx.setLineDash([4,4]);
+    ctx.beginPath();
+    ctx.moveTo(PITCH_X-PITCH_HALF, ZONE_Y);
+    ctx.lineTo(PITCH_X+PITCH_HALF, ZONE_Y);
+    ctx.stroke();
+    ctx.setLineDash([]);
+
+    // crease near stumps
+    ctx.strokeStyle = '#f4f0e4';
+    ctx.lineWidth = 2;
+    ctx.beginPath();
+    ctx.moveTo(PITCH_X-PITCH_HALF-6, STUMP_Y+14);
+    ctx.lineTo(PITCH_X+PITCH_HALF+6, STUMP_Y+14);
+    ctx.stroke();
+
+    // stumps
+    ctx.fillStyle = '#f4f0e4';
+    for(let i=-1;i<=1;i++){
+      ctx.fillRect(PITCH_X + i*8 - 1.5, STUMP_Y-26, 3, 26);
+    }
+    ctx.fillRect(PITCH_X-10, STUMP_Y-29, 20, 3);
+
+    // ball
+    if(ballY !== null){
+      ctx.beginPath();
+      ctx.fillStyle = '#a6291b';
+      ctx.arc(PITCH_X, ballY, ballR, 0, Math.PI*2);
+      ctx.fill();
+      ctx.strokeStyle = '#f4e4c8';
+      ctx.lineWidth = 1;
+      ctx.beginPath();
+      ctx.arc(PITCH_X, ballY, ballR, -0.5, 0.5);
+      ctx.stroke();
+    }
+  }
+
+  function drawStatic(){
+    drawPitch(null, 0);
+  }
+
+  function ballRadius(y){
+    const t = Math.min(1, Math.max(0, (y-START_Y)/(STUMP_Y-START_Y)));
+    return 5 + t*7;
+  }
+
+  function bowl(){
+    if(state.gameOver) return;
+    swingBtn.disabled = false;
+    commentary.classList.remove('lit');
+    commentary.textContent = 'Bowling...';
+    ball = newBall();
+    state.swungThisBall = false;
+    step();
+  }
+
+  function step(now){
+    if(!ball || !ball.active) return;
+    const elapsed = performance.now() - ball.start;
+    const t = Math.min(1, elapsed / ball.duration);
+    ball.y = START_Y + t * (STUMP_Y - START_Y);
+    drawPitch(ball.y, ballRadius(ball.y));
+
+    if(t >= 1){
+      ball.active = false;
+      if(!state.swungThisBall){
+        resolveBall(0, false, 'Left alone. Dot ball.');
       }
+      return;
     }
+    animId = requestAnimationFrame(step);
   }
 
-  function categoryFor(bmi){
-    if(bmi < 18.5) return {name:'Underweight', color:'var(--under)', range:'Below 18.5'};
-    if(bmi < 25) return {name:'Normal', color:'var(--normal)', range:'18.5 – 24.9'};
-    if(bmi < 30) return {name:'Overweight', color:'var(--over)', range:'25.0 – 29.9'};
-    return {name:'Obese', color:'var(--obese)', range:'30.0 and above'};
-  }
+  function resolveBall(runs, isOut, message){
+    state.balls++;
+    if(isOut){ state.wickets++; }
+    state.runs += runs;
+    updateBoard();
+    say(message);
 
-  function update(){
-    const hRaw = parseFloat(heightInput.value);
-    const wRaw = parseFloat(weightInput.value);
-
-    const hCm = toCm(hRaw || 0, heightUnit);
-    const wKg = toKg(wRaw || 0, weightUnit);
-
-    // ruler position
-    const clamped = Math.min(RULER_MAX, Math.max(RULER_MIN, hCm || RULER_MIN));
-    const pct = (clamped - RULER_MIN) / (RULER_MAX - RULER_MIN);
-    fill.style.height = (pct * 100) + '%';
-    marker.style.bottom = (pct * 100) + '%';
-    markerLabel.textContent = (hCm ? Math.round(hCm) : '—') + ' cm';
-
-    if(hCm > 0 && wKg > 0){
-      const bmi = wKg / Math.pow(hCm / 100, 2);
-      const whole = Math.floor(bmi);
-      const decimal = (bmi - whole).toFixed(1).slice(1);
-      bmiValue.innerHTML = whole + '<span class="decimal">' + decimal + '</span>';
-      const cat = categoryFor(bmi);
-      categoryTag.textContent = cat.name;
-      categoryTag.style.background = cat.color;
-      categoryRange.textContent = cat.range;
+    const inningsOver = state.wickets >= MAX_WICKETS || state.balls >= MAX_BALLS;
+    if(inningsOver){
+      state.gameOver = true;
+      swingBtn.disabled = true;
+      setTimeout(showEnd, 700);
     } else {
-      bmiValue.textContent = '—';
-      categoryTag.textContent = '—';
-      categoryTag.style.background = '#9b998a';
-      categoryRange.textContent = '';
+      swingBtn.disabled = true;
+      setTimeout(bowl, 1100);
     }
   }
 
-  heightUnitBtns.forEach(btn => btn.addEventListener('click', () => {
-    if(btn.dataset.unit === heightUnit) return;
-    const hRaw = parseFloat(heightInput.value) || 0;
-    const hCm = toCm(hRaw, heightUnit);
-    heightUnit = btn.dataset.unit;
-    heightInput.value = heightUnit === 'in' ? +(hCm / 2.54).toFixed(1) : Math.round(hCm);
-    setUnit('height', heightUnitBtns, heightUnit);
-    update();
-  }));
+  function showEnd(){
+    endScreen.classList.add('show');
+    endTitle.textContent = state.wickets >= MAX_WICKETS ? 'All out!' : 'Overs complete';
+    endSub.textContent = 'You scored ' + state.runs + ' runs off ' + state.balls + ' balls, losing ' + state.wickets + ' wicket' + (state.wickets===1?'':'s') + '.';
+  }
 
-  weightUnitBtns.forEach(btn => btn.addEventListener('click', () => {
-    if(btn.dataset.unit === weightUnit) return;
-    const wRaw = parseFloat(weightInput.value) || 0;
-    const wKg = toKg(wRaw, weightUnit);
-    weightUnit = btn.dataset.unit;
-    weightInput.value = weightUnit === 'lb' ? +(wKg / 0.453592).toFixed(1) : Math.round(wKg);
-    setUnit('weight', weightUnitBtns, weightUnit);
-    update();
-  }));
+  function swing(){
+    if(!ball || !ball.active || state.swungThisBall || state.gameOver) return;
+    state.swungThisBall = true;
+    cancelAnimationFrame(animId);
 
-  heightInput.addEventListener('input', update);
-  weightInput.addEventListener('input', update);
+    const offset = Math.abs(ball.y - ZONE_Y);
+    let runs = 0, isOut = false, message = '';
 
-  buildTicks();
-  update();
+    if(offset <= 10){ runs = 6; message = 'SIX! Right out of the middle!'; }
+    else if(offset <= 22){ runs = 4; message = 'FOUR! Cracking shot!'; }
+    else if(offset <= 38){ runs = Math.random() < 0.5 ? 1 : 2; message = runs + ' run' + (runs>1?'s':'') + ' — good running.'; }
+    else if(offset <= 65){ isOut = true; message = 'OUT! Mistimed and caught.'; }
+    else { message = 'Swing and a miss! Dot ball.'; }
+
+    resolveBall(runs, isOut, message);
+  }
+
+  swingBtn.addEventListener('click', swing);
+  canvas.addEventListener('click', swing);
+  canvas.addEventListener('keydown', (e) => { if(e.code === 'Space'){ e.preventDefault(); swing(); }});
+  document.addEventListener('keydown', (e) => {
+    if(e.code === 'Space' && document.activeElement !== swingBtn){ e.preventDefault(); swing(); }
+  });
+  againBtn.addEventListener('click', () => { reset(); bowl(); });
+
+  swingBtn.addEventListener('click', () => {
+    if(!ball){ bowl(); }
+  });
+
+  reset();
+})();
 </script>
 
 </body>
